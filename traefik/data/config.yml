@@ -1,0 +1,333 @@
+http:
+ #region routers
+  routers:
+    proxmox:
+      entryPoints:
+        - "https"
+      rule: "Host(`proxmox.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: proxmox
+    pihole:
+      entryPoints:
+        - "https"
+      rule: "Host(`pihole.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - addprefix-pihole
+        - https-redirectscheme
+      tls: {}
+      service: pihole
+    homebridge:
+      entryPoints:
+        - "https"
+      rule: "Host(`homebridge.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: homebridge
+    homeassistant:
+      # For Homeassistant config, check: https://www.home-assistant.io/integrations/http/#reverse-proxies
+      # This relies on Homeassistant using http. No certs are needed in the Homeassistant config.
+      entryPoints:
+        - "https"
+      rule: "Host(`homeassistant.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: homeassistant
+    syncthing:
+      entryPoints:
+        - "https"
+      rule: "Host(`syncthing.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: syncthing
+    qnap:
+      entryPoints:
+        - "https"
+      rule: "Host(`qnap.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: qnap
+    portainer-agent:
+      entryPoints:
+        - "https"
+      rule: "Host(`portainer-agent.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: portainer-agent
+    minio:
+      entryPoints:
+        - "https"
+      rule: "Host(`minio.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: minio
+    rancher:
+      entryPoints:
+        - "https"
+      rule: "Host(`rancher.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: rancher
+    pfsense:
+      entryPoints:
+        - "https"
+      rule: "Host(`pfsense.[DOMAIN_NAME]`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: pfsense
+    #pterodactyl:
+    #  entryPoints:
+    #    - "https"
+    #  rule: "Host(`pterodactyl.[DOMAIN_NAME]`)"
+    #  middlewares:
+    #    - default-headers
+    #    - https-redirectscheme
+    #  tls: {}
+    #  service: pterodactyl
+    panel:
+      entryPoints:
+        - "https"
+      rule: "Host(`ptero-panel.[DOMAIN_NAME]`)"
+      middlewares:
+        - pterodadctyl
+      tls: {}
+      service: panel
+    node:
+      entryPoints:
+        - "https"
+      rule: "Host(`ptero-node.[DOMAIN_NAME]`)"
+      middlewares:
+        - pterodadctyl
+      tls: {}
+      service: node
+    gs1:
+      entryPoints:
+        - "https"
+      rule: "Host(`gs1.[DOMAIN_NAME]`)"
+      middlewares:
+        - pterodadctyl
+      tls: {}
+      service: gs1
+#endregion
+#region services
+  services:
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X:8006"
+        passHostHeader: true
+    pihole:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:80"
+        passHostHeader: true
+    homebridge:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:10999"
+        passHostHeader: true
+    homeassistant:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:10999"
+        passHostHeader: true
+    syncthing:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X:8384"
+        passHostHeader: true
+    qnap:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X"
+        passHostHeader: true
+    portainer-agent:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X:9001"
+        passHostHeader: true
+    minio:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X:9000/"
+        passHostHeader: true
+    rancher:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X"
+        passHostHeader: true
+    pfsense:
+      loadBalancer:
+        servers:
+          - url: "https://10.X.X.X"
+        passHostHeader: true
+    #pterodactyl:
+    #  loadBalancer:
+    #    servers:
+    #      - url: "http://10.X.X.X:80"
+    #    passHostHeader: true
+    panel:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:8001"
+        passHostHeader: true
+    node:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:8181"
+        passHostHeader: true
+    gs1:
+      loadBalancer:
+        servers:
+          - url: "http://10.X.X.X:25000"
+        passHostHeader: true
+#endregion
+  middlewares:
+    addprefix-pihole:
+      addPrefix:
+        prefix: "/admin"
+    https-redirectscheme:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    default-csp:
+      headers:
+        contentsecuritypolicy: "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; img-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; font-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; connect-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; frame-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; object-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; media-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; prefetch-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; style-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; child-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:; default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: wss: https:;"
+
+    cors-all:
+      headers:
+        customRequestHeaders:
+          Access-Control-Allow-Origin: origin-list-or-null
+          Sec-Fetch-Site: cross-site
+          X-Forwarded-Proto: https
+          Access-Control-Allow-Headers: "*, Authorization"
+        customResponseHeaders:
+          Access-Control-Allow-Origin: "*"
+          Sec-Fetch-Site: cross-site
+          X-Forwarded-Proto: https
+          Access-Control-Allow-Headers: "*, Authorization"
+        accessControlAllowMethods:
+          - OPTIONS
+          - POST
+          - GET
+          - PUT
+          - DELETE
+          - PATCH
+        accessControlAllowHeaders:
+          - "*, Authorization"
+        accessControlExposeHeaders:
+          - "*, Authorization"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        accessControlAllowCredentials: true
+        accessControlAllowOriginList:
+          - "*"
+
+    hsts-headers:
+      headers:
+        customResponseHeaders:
+          X-Permitted-Cross-Domain-Policies: none
+
+    security-headers:
+      headers:
+        customResponseHeaders:
+          Permissions-Policy: "fullscreen=(*), display-capture=(self), accelerometer=(), battery=(), camera=(), autoplay=(self), vibrate=(self), geolocation=(self), midi=(self), notifications=(*), push=(*), microphone=(self), magnetometer=(self), gyroscope=(self), payment=(self)"
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: ""
+          via: ""
+          X-Forwarded-Proto: https
+        sslProxyHeaders:
+          X-Forwarded-Proto: https
+        referrerPolicy: same-origin
+        hostsProxyHeaders:
+          - X-Forwarded-Host
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+        contentTypeNosniff: true
+
+    inflight-req:
+      inFlightReq:
+        amount: 128
+
+    rate-limit:
+      rateLimit:
+        average: 128
+        period: 1m
+        burst: 128
+
+    retry-attempts:
+      retry:
+        attempts: 16
+        initialInterval: 1000ms
+
+    compress-all:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+        minResponseBodyBytes: 1024
+
+    pterodadctyl:
+      chain:
+        middlewares:
+          - https-redirectscheme
+          - default-headers
+          - default-csp
+          - cors-all
+          - hsts-headers
+          - security-headers
+          - inflight-req
+          - rate-limit
+          - retry-attempts
+          - compress-all
+
+    default-whitelist:
+      ipWhiteList:
+        sourceRange:
+        - "10.55.55.0/24"
+        - "10.10.0.0/24"
+        - "192.168.0.0/16"
+        - "172.16.0.0/12"
+
+    secured:
+      chain:
+        middlewares:
+        - default-whitelist
+        - default-headers
+
+    crowdsec-bouncer:
+      forwardauth:
+        address: http://bouncer-traefik:8080/api/v1/forwardAuth
+        trustForwardHeader: true
